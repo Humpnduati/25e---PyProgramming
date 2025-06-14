@@ -1,8 +1,7 @@
 import random
 
 hang = ["""
-
-H A N G M A N -UCL
+H A N G M A N - UCL
 
   +---+
   |   |
@@ -20,7 +19,7 @@ H A N G M A N - UCL
       |
       |
 =========""", """
-H A N G M A N -UCL 
+H A N G M A N - UCL
 
   +---+
   |   |
@@ -58,96 +57,92 @@ H A N G M A N - UCL
 ========="""]
 
 
-def getRandomWord():
-    champions_league_winners = ['Manutd', 'Milan', 'Barca', 'Madrid', 'Bayern', 'AJAX', 'Juve', 'Livepool', 'PSG',
-                                'Chelsea', 'Mancity']
-
+def get_random_word():
+    champions_league_winners = ['Manutd', 'Milan', 'Barca', 'Madrid', 'Bayern', 'AJAX', 'Juve', 'Liverpool', 'PSG',
+                               'Chelsea', 'Mancity']
     word = random.choice(champions_league_winners)
-    return word
+    return word.lower()  # Convert to lowercase for consistency
 
 
-def displayBoard(hang, missedLetters, correctLetters, secretWord):
-    print(hang[len(missedLetters)])
+def display_board(hang, missed_letters, correct_letters, secret_word):
+    print(hang[len(missed_letters)])  # Fixed: use hang instead of 'hang'
     print()
 
     print('Missed Letters:', end=' ')
-    for letter in missedLetters:
+    for letter in missed_letters:
         print(letter, end=' ')
     print("\n")
 
-    blanks = '_' * len(secretWord)
+    blanks = '_' * len(secret_word)
 
-    for i in range(len(secretWord)):  # replace blanks with correctly guessed letters
-        if secretWord[i] in correctLetters:
-            blanks = blanks[:i] + secretWord[i] + blanks[i + 1:]
+    for i in range(len(secret_word)):
+        if secret_word[i] in correct_letters:
+            blanks = blanks[:i] + secret_word[i] + blanks[i+1:]
 
-    for letter in blanks:  # show the secret word with spaces in between each letter
+    for letter in blanks:
         print(letter, end=' ')
     print("\n")
 
 
-def getGuess(alreadyGuessed):
+def get_guess(already_guessed):
     while True:
-        guess = input('Guess a letter: ')
-        guess = guess.lower()
-        try:
-            if len(guess) != 1:
-                print('Please enter a single letter.')
-            elif guess in AttemptFailed:
-                print('Attempt Failed. Choose again.')
-
-            else:
-                return guess
-                continue
-        except ValueError:
+        guess = input('Guess a letter: ').lower()
+        if len(guess) != 1:
+            print('Please enter a single letter.')
+        elif guess in already_guessed:
+            print('You have already guessed that letter. Choose again.')
+        elif not guess.isalpha():
+            print('Please enter a LETTER.')
+        else:
             return guess
 
 
-def playAgain():
+def play_again():
     return input("\nDo you want to play again? ").lower().startswith('y')
 
 
-missedLetters = ''
-correctLetters = ''
-secretWord = getRandomWord()
-gameIsDone = False
+print("H A N G M A N - UCL EDITION")
+missed_letters = ''
+correct_letters = ''
+secret_word = get_random_word()
+game_is_done = False
 
 while True:
-    displayBoard(hang, missedLetters, correctLetters, secretWord)
+    display_board(hang, missed_letters, correct_letters, secret_word)
 
-    guess = getGuess(missedLetters + correctLetters)
+    # Let the player enter a letter
+    guess = get_guess(missed_letters + correct_letters)
 
-    try:
+    if guess in secret_word:
+        correct_letters = correct_letters + guess
 
-        if guess in secretWord:
-            correctLetters = correctLetters + guess
-
-            foundAllLetters = True
-            for i in range(len(secretWord)):
-                if secretWord[i] not in correctLetters:
-                    foundAllLetters = False
-                    break
-            if foundAllLetters:
-                print('\nYes! The secret word is "' +
-                      secretWord + '"! You have won!')
-                gameIsDone = True
-        else:
-            missedLetters = missedLetters + guess
-
-            if len(missedLetters) == len(hang) - 1:
-                displayBoard(hang, missedLetters,
-                             correctLetters, secretWord)
-                print('YOU LOST!\nAfter ' + str(len(missedLetters)) + ' missed guesses and ' +
-                      str(len(correctLetters)) + ' correct guesses, the word was "' + secretWord + '"')
-                gameIsDone = True
-
-    except:
-
-        if gameIsDone:
-            if playAgain():
-                missedLetters = ''
-                correctLetters = ''
-                gameIsDone = False
-                secretWord = getRandomWord()
-            else:
+        # Check if player has won
+        found_all_letters = True
+        for i in range(len(secret_word)):
+            if secret_word[i] not in correct_letters:
+                found_all_letters = False
                 break
+        if found_all_letters:
+            print('\nYes! The secret word is "' +
+                  secret_word + '"! You have won!')
+            game_is_done = True
+    else:
+        missed_letters = missed_letters + guess
+
+        # Check if player has guessed too many times and lost
+        if len(missed_letters) == len(hang) - 1:
+            display_board(hang, missed_letters,
+                         correct_letters, secret_word)
+            print('YOU LOST!\nAfter ' + str(len(missed_letters)) + ' missed guesses and ' +
+                  str(len(correct_letters)) + ' correct guesses, the word was "' + secret_word + '"')
+            game_is_done = True
+
+    # Ask the player if they want to play again (only if the game is done)
+    if game_is_done:
+        if play_again():
+            missed_letters = ''
+            correct_letters = ''
+            game_is_done = False
+            secret_word = get_random_word()
+        else:
+            break
