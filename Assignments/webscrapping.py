@@ -35,6 +35,6 @@ if __name__=='__main__' :
         
     for i, (headline, summary) in enumerate(zip(headlines, summaries), 1):
         print(f'{i}. {headline}')
-        print(f'Summary: {summary}')
+        print(f'Summary: {summary}' )
 
 
