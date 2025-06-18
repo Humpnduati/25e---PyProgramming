@@ -7,12 +7,12 @@ import re
 from datetime import datetime
 
 # Configure settings
-MAX_PAGES = 5
-BASE_URL = "https://www.jumia.co.ke/smartphones/"
+MAX_PAGES = 5                           #control how many pages to scrape
+BASE_URL = "https://www.jumia.co.ke/smartphones/" #you can modify the url to target different categories
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 }
-DELAY = 1.5  # Seconds between requests
+DELAY = 1.5  # Seconds between requests #increase delay if experiencing ip blocks
 CSV_FILENAME = f"jumia_products_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
 
 def scrape_page(url):
