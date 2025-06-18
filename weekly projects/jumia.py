@@ -87,7 +87,7 @@ def parse_products(itemlist):
                 'brand': brand,
                 'description': description,
                 'price': numeric_price,
-                'url': f"https://www.jumia.co.ke{link}"
+                'url': f"https://www.jumia.co.ke"
             })
         except Exception as e:
             print(f"Error parsing product: {str(e)}")
@@ -146,7 +146,7 @@ def main():
             print("\nError: Minimum price cannot be higher than maximum price")
             return
 
-        url = f"https://www.jumia.co.ke/mlp-jumia-offical-stores{query.replace(' ', '%20')}&price={min_price}-{max_price}"
+        url = f"https://www.jumia.co.ke {query.replace(' ', '%20')}&price={min_price}-{max_price}"
     elif choice == 11:  # Direct product observation
         product_url = input("Enter full product URL: ").strip()
         products = [{
@@ -161,8 +161,7 @@ def main():
     else:  # Category
         min_price = get_price_input("Enter minimum price: ")
         max_price = get_price_input("Enter maximum price: ")
-        url = f"https://www.jumia.co.ke/mlp-jumia-offical-stores{CATEGORIES[choice]}/?price={min_price}-{max_price}"
-
+        url = f"https://www.jumia.co.ke/  {CATEGORIES[choice]}/?price={min_price}-{max_price}"
     # Fetch and parse products
     items = fetch_products(url)
     if not items:
