@@ -1,0 +1,7 @@
+This code implements a graphical Hardware Store Billing System using Python's Tkinter library. The main class, `HardwareStoreBillingSystem`, manages the user interface and the business logic for billing, stock management, and receipt generation.
+
+When the application starts, it creates a window with sections for customer details, product categories (Tools & Fasteners, Plumbing Supplies, Paint & Supplies, Electrical Supplies), and an output area for the bill summary. Each product has a price and a stock level, which is loaded from a JSON file (`stock.json`). If the stock file doesn't exist, it initializes all products with a default stock.
+
+Users can enter customer information, select quantities for various products (with stock levels and warnings for low stock), and perform actions such as calculating totals, generating a bill, saving a receipt, clearing the form, restocking items, and viewing stock summaries. The system calculates category-wise totals, applies a 5% tax, and displays a formatted bill. When a receipt is saved, the stock is updated and persisted, and a copy of the bill is saved in a `receipts` folder. Stock history is also saved with timestamps for tracking.
+
+The code is modular, with methods for loading and saving stock, updating the UI, calculating totals, generating and saving bills, and handling user actions. It uses Tkinter widgets for the interface and provides user feedback through message boxes. The design ensures that stock levels are always accurate and that receipts and stock changes are recorded for future reference.
