@@ -1,0 +1,69 @@
+We are going to scrape products from Jumia Kenya (jumia.co.ke) and save the data to a CSV file.
+
+Steps:
+
+1. We'll choose a category to scrape. For example, let's take "Electronics" -> "Phones & Tablets" -> "Smartphones".
+
+URL: https://www.jumia.co.ke/smartphones/
+
+2. We note that Jumia uses lazy loading and pagination. We will need to handle multiple pages.
+
+3. We will extract product details: name, brand, price, discount, rating, number of reviews, product URL, image URL, etc.
+
+4. We'll use `requests` to get the page and `BeautifulSoup` for parsing. Also, we'll use `csv` to write the data.
+
+5. We need to handle potential blocking by Jumia by setting a user-agent and possibly using delays.
+
+Important: We must check Jumia's robots.txt and terms of service to ensure compliance.
+
+robots.txt: https://www.jumia.co.ke/robots.txt
+
+It allows some scraping but we should be respectful with the rate.
+
+Let's plan:
+
+- We'll create a function to scrape a single page given a URL.
+
+- We'll create a function to scrape multiple pages by iterating through the pagination.
+
+- We'll save the data to a CSV file.
+
+Note: The structure of Jumia's product listings might change, so we have to be cautious.
+
+Let's inspect a product card on the page:
+
+- Each product is in an article with class "prd _fb col c-prd"
+
+- Within that, we can find:
+
+- Name: class="name"
+
+- Price: class="prc"
+
+- Old price (if discounted): class="old"
+
+- Discount: class="bdg _dsct"
+
+- Rating: class="stars _s" (then we can get the style attribute for the width which represents the rating out of 5)
+
+- Number of reviews: class="rev"
+
+- Product URL: the href in the <a> tag that is the direct parent of the core (or in the same article, the <a> with class="core")
+
+- Image URL: img tag inside the article, attribute "data-src"
+
+However, note that the page is dynamic and sometimes the classes change. We must be cautious.
+
+Alternative approach: We can use the core class which is present in every product card.
+
+Let's write the code step by step.
+
+We'll set a user-agent to mimic a browser.
+
+We'll handle pagination by observing the URL pattern:
+
+- The first page: https://www.jumia.co.ke/smartphones/
+
+- The second page: https://www.jumia.co.ke/smartphones/?page=2
+
+We'll loop until we find a page that has no products or until we reach a set limit.
