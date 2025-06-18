@@ -37,9 +37,4 @@ for student in students:
 #query specific fields
 students = Students_collection.find({}, {'firstName': 1, 'grade': 1})
 for student in students:
-    #print(student)
-    
-  
-    
-                     
-
+    print(student)
