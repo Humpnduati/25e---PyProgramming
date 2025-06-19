@@ -1,0 +1,22 @@
+{
+    "nails": 100,
+    "screws": 100,
+    "hammers": 100,
+    "screwdrivers": 100,
+    "pliers": 100,
+    "pipes": 100,
+    "valves": 100,
+    "faucets": 100,
+    "pvc_joints": 100,
+    "taps": 100,
+    "paint_buckets": 44,
+    "brushes": 100,
+    "thinners": 100,
+    "rollers": 100,
+    "tapes": 100,
+    "wires": -347,
+    "switches": -578,
+    "bulbs": 100,
+    "sockets": 100,
+    "circuit_breakers": 100
+}
