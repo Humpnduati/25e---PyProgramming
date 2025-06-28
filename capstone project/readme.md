@@ -49,7 +49,7 @@ This Python application is a comprehensive hardware store management system that
 - **Action Buttons**:
   - Calculate Total
   - Generate Bill
-  - Save Receipt
+  - Save Receipt*
   - Clear All
   - Restock Items
   - Stock Summary
@@ -94,38 +94,38 @@ from datetime import datetime
 import os
 import json
 
-class HardwareStoreBillingSystem:
+class hardwarestoremanagementsystem:
     def __init__(self, root):
-        # Initialization code (UI setup, variables, stock loading)
+        # initialization code (ui setup, variables, stock loading)
     
-    # Stock management methods
+    # stock management methods
     def load_stock(self):
-    def save_stock(self, stock=None):
+    def save_stock(self, stock=none):
     
-    # UI creation
+    # ui creation
     def create_widgets(self):
     
-    # Stock display updates
+    # stock display updates
     def update_stock_display(self, product):
     def refresh_stock_displays(self):
     
-    # Billing functions
+    # billing functions
     def calculate_total(self):
     def generate_bill_text(self):
     def generate_bill(self):
     def save_bill(self):
     
-    # Stock management UI
+    # stock management ui
     def show_stock_summary(self):
     def show_restock_dialog(self):
     
-    # Utility functions
+    # utility functions
     def clear_all(self):
     def exit_app(self):
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = HardwareStoreBillingSystem(root)
+    root = tk.tk()
+    app = hardwarestorebillingsystem(root)
     root.mainloop()
 	
 	
@@ -212,15 +212,15 @@ Address: 123 Main Street, Anytown
 ----------------------------------------------------------------
 Product                          Qty         Price         Amount
 ----------------------------------------------------------------
-Nails                              5           ₹10           ₹50
-Hammers                            2          ₹250          ₹500
-Paint Buckets                      1         ₹1800         ₹1800
-Brushes                            3          ₹120          ₹360
-Wires                             10           ₹25          ₹250
+Nails                              5           Ksh10            Ksh50
+Hammers                            2          Ksh250           Ksh500
+Paint Buckets                      1         Ksh1800          Ksh1800
+Brushes                            3          Ksh120           Ksh360
+Wires                             10           Ksh25           Ksh250
 ----------------------------------------------------------------
-SUBTOTAL:                                              ₹2960
-TAX (5%):                                              ₹148
-GRAND TOTAL:                                          ₹3108
+SUBTOTAL:                                              Ksh 2960
+TAX (5%):                                              Ksh 148
+GRAND TOTAL:                                          Ksh 3108
 ================================================================
                THANK YOU FOR YOUR BUSINESS!               
       Quality Hardware for All Your Project Needs      

@@ -13,7 +13,7 @@ class HardwareStoreManagementSystem:
         self.root.geometry("1200x900+0+0")
         self.root.configure(bg="#f5f5f5")
         
-        # Define hardware-themed colors
+                                     # Define hardware-themed colors
         self.bg_color = "#2C3E50"  # Dark blue
         self.fg_color = "#ECF0F1"  # Light gray
         self.lbl_color = '#3498DB'  # Blue
@@ -21,7 +21,7 @@ class HardwareStoreManagementSystem:
         self.button_color = "#16A085"  # Green
         self.stock_warning_color = "#F39C12"  # Orange for low stock
         
-        # Prices dictionary
+                                    # Prices dictionary
         self.prices = {
             "nails": 10, "screws": 15, "hammers": 250, "screwdrivers": 150, "pliers": 200,
             "pipes": 180, "valves": 350, "faucets": 1200, "pvc_joints": 45, "taps": 800,
@@ -29,25 +29,25 @@ class HardwareStoreManagementSystem:
             "wires": 25, "switches": 120, "bulbs": 100, "sockets": 85, "circuit_breakers": 450
         }
         
-        # Stock management
+                                     # Stock management
         self.stock_file = "stock.json"
         self.stock = self.load_stock()
         self.low_stock_threshold = 10  # Threshold for low stock warning
         
-        # Initialize variables
+                                    # Initialize variables
         self.bill_no = random.randint(10, 999999)
         self.customer_name = tk.StringVar()
         self.customer_phone = tk.StringVar()
         self.customer_address = tk.StringVar()
         
-        # Create widgets
+                                     # Create widgets
         self.create_widgets()
         
-        # Create receipts directory
+                                     # Create receipts directory
         if not os.path.exists('receipts'):
             os.makedirs('receipts')
             
-        # Create stock directory if it doesn't exist
+                                    # Create stock directory if it doesn't exist
         if not os.path.exists('stock_history'):
             os.makedirs('stock_history')
     
@@ -60,7 +60,7 @@ class HardwareStoreManagementSystem:
         except Exception as e:
             messagebox.showwarning("Stock Error", f"Could not load stock data: {str(e)}")
         
-        # Initialize stock if file doesn't exist
+                                    # Initialize stock if file doesn't exist
         stock = {product: 100 for product in self.prices}
         self.save_stock(stock)
         return stock
@@ -83,7 +83,7 @@ class HardwareStoreManagementSystem:
             messagebox.showerror("Stock Error", f"Could not save stock data: {str(e)}")
     
     def create_widgets(self):
-        # Header
+                                        # Header
         header_frame = tk.Frame(self.root, bg=self.bg_color, bd=2, relief=tk.GROOVE)
         header_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -95,46 +95,46 @@ class HardwareStoreManagementSystem:
                             font=("Arial", 12), bg=self.bg_color, fg=self.fg_color)
         date_label.pack(side=tk.RIGHT, padx=10, pady=10)
         
-        # Stock summary button
+                                        # Stock summary button
         stock_button = tk.Button(header_frame, text="Stock Summary", command=self.show_stock_summary,
                                 font=("Arial", 11), bg=self.stock_warning_color, fg=self.fg_color)
         stock_button.pack(side=tk.RIGHT, padx=10)
         
-        # Customer details
+                                        # Customer details
         customer_frame = tk.LabelFrame(self.root, text="Customer Details", font=("Arial", 12, "bold"),
                                      bg=self.fg_color, bd=2, relief=tk.GROOVE)
         customer_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        # Customer name
+                                        # Customer name
         tk.Label(customer_frame, text="Customer Name:", font=("Arial", 11), 
                 bg=self.fg_color).grid(row=0, column=0, padx=5, pady=5, sticky="e")
         name_entry = tk.Entry(customer_frame, textvariable=self.customer_name, 
                              font=("Arial", 11), width=30)
         name_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
         
-        # Customer phone
+                                        # Customer phone
         tk.Label(customer_frame, text="Phone:", font=("Arial", 11), 
                 bg=self.fg_color).grid(row=0, column=2, padx=5, pady=5, sticky="e")
         phone_entry = tk.Entry(customer_frame, textvariable=self.customer_phone, 
                              font=("Arial", 11), width=20)
         phone_entry.grid(row=0, column=3, padx=5, pady=5, sticky="w")
         
-        # Bill number
+                                        # Bill number
         tk.Label(customer_frame, text=f"Bill No: {self.bill_no}", font=("Arial", 11, "bold"), 
                 bg=self.fg_color).grid(row=0, column=4, padx=5, pady=5)
         
-        # Customer address
+                                        # Customer address
         tk.Label(customer_frame, text="Address:", font=("Arial", 11), 
                 bg=self.fg_color).grid(row=1, column=0, padx=5, pady=5, sticky="e")
         address_entry = tk.Entry(customer_frame, textvariable=self.customer_address, 
                                 font=("Arial", 11), width=70)
         address_entry.grid(row=1, column=1, columnspan=4, padx=5, pady=5, sticky="we")
         
-        # Product categories
+                                        # Product categories
         categories_frame = tk.Frame(self.root, bg=self.fg_color)
         categories_frame.pack(fill=tk.BOTH, padx=10, pady=5, expand=True)
         
-        # Tools & Fasteners
+                                        # Tools & Fasteners
         tools_frame = tk.LabelFrame(categories_frame, text="Tools & Fasteners", 
                                   font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         tools_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5, expand=True)
@@ -142,7 +142,7 @@ class HardwareStoreManagementSystem:
         self.tools_inputs = {}
         row = 0
         for product in ["nails", "screws", "hammers", "screwdrivers", "pliers"]:
-            # Create label with stock information
+                                        # Create label with stock information
             stock = self.stock.get(product, 0)
             stock_color = "black" if stock > self.low_stock_threshold else self.stock_warning_color
             stock_text = f"{product.title()}: (Stock: {stock})"
@@ -150,7 +150,7 @@ class HardwareStoreManagementSystem:
                           bg=self.fg_color, fg=stock_color)
             lbl.grid(row=row, column=0, padx=5, pady=5, sticky="e")
             
-            # Create spinbox for quantity input
+                                        # Create spinbox for quantity input
             var = tk.IntVar(value=0)
             self.tools_inputs[product] = (var, lbl)
             spinbox = tk.Spinbox(tools_frame, textvariable=var, from_=0, to=stock if stock > 0 else 0,
@@ -158,7 +158,7 @@ class HardwareStoreManagementSystem:
             spinbox.grid(row=row, column=1, padx=5, pady=5)
             row += 1
         
-        # Plumbing Supplies
+                                        # Plumbing Supplies
         plumbing_frame = tk.LabelFrame(categories_frame, text="Plumbing Supplies", 
                                      font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         plumbing_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5, expand=True)
@@ -181,7 +181,7 @@ class HardwareStoreManagementSystem:
             spinbox.grid(row=row, column=1, padx=5, pady=5)
             row += 1
         
-        # Paint & Supplies
+                                        # Paint & Supplies
         paint_frame = tk.LabelFrame(categories_frame, text="Paint & Supplies", 
                                   font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         paint_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5, expand=True)
@@ -206,7 +206,7 @@ class HardwareStoreManagementSystem:
             spinbox.grid(row=row, column=1, padx=5, pady=5)
             row += 1
         
-        # Electrical Supplies
+                                        # Electrical Supplies
         electrical_frame = tk.LabelFrame(categories_frame, text="Electrical Supplies", 
                                       font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         electrical_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5, expand=True)
@@ -228,7 +228,7 @@ class HardwareStoreManagementSystem:
             spinbox.grid(row=row, column=1, padx=5, pady=5)
             row += 1
         
-        # Buttons
+                                        # Buttons
         button_frame = tk.Frame(self.root, bg=self.fg_color)
         button_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -256,7 +256,7 @@ class HardwareStoreManagementSystem:
                  font=("Arial", 11, "bold"), bg=self.highlight_color, fg=self.fg_color,
                  width=15, height=2).pack(side=tk.LEFT, padx=5)
         
-        # Output area
+                                            # Output area
         output_frame = tk.LabelFrame(self.root, text="Bill Summary", 
                                    font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         output_frame.pack(fill=tk.BOTH, padx=10, pady=5, expand=True)
@@ -265,7 +265,7 @@ class HardwareStoreManagementSystem:
                                                    font=("Courier New", 10), height=15)
         self.output_text.pack(fill=tk.BOTH, padx=5, pady=5, expand=True)
         
-        # Instructions
+                                            # Instructions
         instructions_frame = tk.Frame(self.root, bg="#f0f8ff", bd=1, relief=tk.GROOVE)
         instructions_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -292,7 +292,7 @@ class HardwareStoreManagementSystem:
     
     def update_stock_display(self, product):
         """Update stock display after quantity change"""
-        # Find which category the product belongs to
+                                        # Find which category the product belongs to
         inputs_dict = None
         if product in self.tools_inputs:
             inputs_dict = self.tools_inputs
@@ -309,7 +309,7 @@ class HardwareStoreManagementSystem:
             ordered = var.get()
             available = max(0, current_stock - ordered)
             
-            # Update label color based on available stock
+                                        # Update label color based on available stock
             stock_color = "black" if available > self.low_stock_threshold else self.stock_warning_color
             display_name = product.replace('_', ' ').title()
             if "Pvc" in display_name:
@@ -319,7 +319,7 @@ class HardwareStoreManagementSystem:
                 
             lbl.config(text=f"{display_name}: (Stock: {available})", fg=stock_color)
             
-            # Update spinbox max value
+                                        # Update spinbox max value
             for frame in [self.tools_inputs, self.plumbing_inputs, self.paint_inputs, self.electrical_inputs]:
                 if product in frame:
                     var, lbl = frame[product]
@@ -332,23 +332,23 @@ class HardwareStoreManagementSystem:
             messagebox.showwarning("Input Error", "Please enter customer name!")
             return
             
-        # Calculate totals
+                                        # Calculate totals
         tools_total = sum(self.tools_inputs[item][0].get() * self.prices[item] for item in self.tools_inputs)
         plumbing_total = sum(self.plumbing_inputs[item][0].get() * self.prices[item] for item in self.plumbing_inputs)
         paint_total = sum(self.paint_inputs[item][0].get() * self.prices[item] for item in self.paint_inputs)
         electrical_total = sum(self.electrical_inputs[item][0].get() * self.prices[item] for item in self.electrical_inputs)
         
-        # Calculate taxes
+                                        # Calculate ETR
         tools_tax = round(tools_total * 0.05)
         plumbing_tax = round(plumbing_total * 0.05)
         paint_tax = round(paint_total * 0.05)
         electrical_tax = round(electrical_total * 0.05)
         
-        # Grand total
+                                        # Grand total
         grand_total = tools_total + plumbing_total + paint_total + electrical_total + \
                      tools_tax + plumbing_tax + paint_tax + electrical_tax
         
-        # Display results
+                                        # Display results
         self.output_text.delete(1.0, tk.END)
         self.output_text.insert(tk.END, "="*80 + "\n")
         self.output_text.insert(tk.END, f"{'HARDWARE STORE MANAGEMENT SYSTEM':^80}\n")
@@ -359,7 +359,7 @@ class HardwareStoreManagementSystem:
         self.output_text.insert(tk.END, f"Address: {self.customer_address.get()}\n")
         self.output_text.insert(tk.END, "-"*80 + "\n")
         
-        # Create a table for totals
+                                        # Create a table for totals
         self.output_text.insert(tk.END, f"{'Category':<20}{'Subtotal':>20}{'Tax':>20}\n")
         self.output_text.insert(tk.END, "-"*80 + "\n")
         self.output_text.insert(tk.END, f"{'Tools':<20}{'Ksh.' + str(tools_total):>20}{'Ksh.' + str(tools_tax):>20}\n")
@@ -373,25 +373,25 @@ class HardwareStoreManagementSystem:
     def generate_bill_text(self):
         customer_name = self.customer_name.get()
         if not customer_name:
-            return "⚠️ Please enter customer name!", None
+            return " Please enter customer name!", None
         
-        # Calculate totals
+                                        # Calculate totals
         tools_total = sum(self.tools_inputs[item][0].get() * self.prices[item] for item in self.tools_inputs)
         plumbing_total = sum(self.plumbing_inputs[item][0].get() * self.prices[item] for item in self.plumbing_inputs)
         paint_total = sum(self.paint_inputs[item][0].get() * self.prices[item] for item in self.paint_inputs)
         electrical_total = sum(self.electrical_inputs[item][0].get() * self.prices[item] for item in self.electrical_inputs)
         
-        # Calculate taxes
+                                        # Calculate ETR
         tools_tax = round(tools_total * 0.05)
         plumbing_tax = round(plumbing_total * 0.05)
         paint_tax = round(paint_total * 0.05)
         electrical_tax = round(electrical_total * 0.05)
         
-        # Grand total
+                                        # Grand total
         grand_total = tools_total + plumbing_total + paint_total + electrical_total + \
                      tools_tax + plumbing_tax + paint_tax + electrical_tax
         
-        # Generate bill header
+                                        # Generate bill header
         bill_text = "\n" + "="*80 + "\n"
         bill_text += f"{'HARDWARE EMPORIUM':^80}\n"
         bill_text += f"{'='*80}\n"
@@ -403,7 +403,7 @@ class HardwareStoreManagementSystem:
         bill_text += f"{'Product':<30}{'Qty':>10}{'Price':>15}{'Amount':>15}\n"
         bill_text += "-"*80 + "\n"
         
-        # Add products to bill
+                                        # Add products to bill
         all_inputs = {
             "Tools": self.tools_inputs,
             "Plumbing": self.plumbing_inputs,
@@ -451,48 +451,48 @@ class HardwareStoreManagementSystem:
             messagebox.showwarning("Input Error", bill_text)
             return
             
-        # Create filename
+                                                # Create filename
         filename = f"receipts/{customer_name.replace(' ', '_')}_{self.bill_no}_{datetime.now().strftime('%Y%m%d')}.txt"
         
-        # Save to file
+                                                # Save to file
         try:
             with open(filename, 'w') as file:
                 file.write(bill_text)
             
-            # Update stock levels
+                                                # Update stock levels
             for category in [self.tools_inputs, self.plumbing_inputs, self.paint_inputs, self.electrical_inputs]:
                 for product, (var, lbl) in category.items():
                     qty = var.get()
                     if qty > 0:
                         self.stock[product] -= qty
             
-            # Save updated stock
+                                                # Save updated stock
             self.save_stock()
             
-            messagebox.showinfo("Success", f"✅ Receipt saved successfully as:\n{filename}")
+            messagebox.showinfo("Success", f" Receipt saved successfully as:\n{filename}")
         except Exception as e:
-            messagebox.showerror("Error", f"❌ Error saving receipt: {str(e)}")
+            messagebox.showerror("Error", f" Error saving receipt: {str(e)}")
     
     def clear_all(self):
-        # Clear inputs
+                                                # Clear inputs
         self.customer_name.set("")
         self.customer_phone.set("")
         self.customer_address.set("")
         
-        # Generate new bill number
-        self.bill_no = random.randint(10, 9999999)
+                                                # Generate new bill number
+        self.bill_no = random.randint(100, 9999999)
         
-        # Reset all quantities
+                                                # Reset all quantities
         for category in [self.tools_inputs, self.plumbing_inputs, 
                          self.paint_inputs, self.electrical_inputs]:
             for (var, lbl) in category.values():
                 var.set(0)
         
-        # Clear output
+                                                # Clear output
         self.output_text.delete(1.0, tk.END)
-        self.output_text.insert(tk.END, "🔄 Form cleared. Ready for new customer.")
+        self.output_text.insert(tk.END, " Form cleared. Ready for new customer.")
         
-        # Refresh stock displays
+                                            # Refresh stock displays
         self.refresh_stock_displays()
     
     def refresh_stock_displays(self):
@@ -509,7 +509,7 @@ class HardwareStoreManagementSystem:
                     display_name = "Painter's Tape"
                 lbl.config(text=f"{display_name}: (Stock: {stock})", fg=stock_color)
                 
-                # Update spinbox max value
+                                            # Update spinbox max value
                 spinbox = lbl.master.grid_slaves(row=lbl.grid_info()["row"], column=1)[0]
                 spinbox.config(to=stock if stock > 0 else 0)
     
@@ -521,33 +521,33 @@ class HardwareStoreManagementSystem:
         stock_window.transient(self.root)
         stock_window.grab_set()
         
-        # Create a frame for the treeview and scrollbar
+                                            # Create a frame for the treeview and scrollbar
         tree_frame = tk.Frame(stock_window)
         tree_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Create a treeview with columns
+                                            # Create a treeview with columns
         columns = ("Product", "Current Stock", "Status")
         tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
         
-        # Define headings
+                                            # Define headings
         tree.heading("Product", text="Product")
         tree.heading("Current Stock", text="Current Stock")
         tree.heading("Status", text="Status")
         
-        # Define column widths
+                                            # Define column widths
         tree.column("Product", width=300, anchor="w")
         tree.column("Current Stock", width=100, anchor="center")
         tree.column("Status", width=100, anchor="center")
         
-        # Add scrollbar
+                                            # Add scrollbar
         scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=tree.yview)
         tree.configure(yscroll=scrollbar.set)
         
-        # Pack the tree and scrollbar
+                                            # Pack the tree and scrollbar
         tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # Add stock data to the treeview
+                                            # Add stock data to the treeview
         for product, stock in self.stock.items():
             status = "Low" if stock <= self.low_stock_threshold else "OK"
             display_name = product.replace('_', ' ').title()
@@ -558,11 +558,11 @@ class HardwareStoreManagementSystem:
             tree.insert("", tk.END, values=(display_name, stock, status), 
                         tags=("low" if status == "Low" else "ok"))
         
-        # Configure tag colors
+                                            # Configure tag colors
         tree.tag_configure("low", background="#FFF2CC")
         tree.tag_configure("ok", background="white")
         
-        # Add summary
+                                            # Add summary
         low_stock_count = sum(1 for stock in self.stock.values() if stock <= self.low_stock_threshold)
         summary_frame = tk.Frame(stock_window)
         summary_frame.pack(fill=tk.X, padx=10, pady=5)
@@ -572,7 +572,7 @@ class HardwareStoreManagementSystem:
         tk.Label(summary_frame, text=f"Low Stock Items: {low_stock_count}", 
                 font=("Arial", 10), fg=self.stock_warning_color).pack(side=tk.LEFT, padx=10)
         
-        # Add button to close
+                                            # Add button to close
         button_frame = tk.Frame(stock_window)
         button_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -588,11 +588,11 @@ class HardwareStoreManagementSystem:
         restock_window.transient(self.root)
         restock_window.grab_set()
         
-        # Create a frame for the listbox and scrollbar
+                                            # Create a frame for the listbox and scrollbar
         list_frame = tk.Frame(restock_window)
         list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Create a listbox to select products
+                                            # Create a listbox to select products
         tk.Label(list_frame, text="Select Product:", 
                 font=("Arial", 11)).pack(anchor="w", pady=5)
         
@@ -601,7 +601,7 @@ class HardwareStoreManagementSystem:
         scrollbar = tk.Scrollbar(list_frame, orient=tk.VERTICAL, command=products_listbox.yview)
         products_listbox.config(yscrollcommand=scrollbar.set)
         
-        # Add products to listbox
+                                            # Add products to listbox
         sorted_products = sorted(self.stock.keys())
         for product in sorted_products:
             display_name = product.replace('_', ' ').title()
@@ -614,11 +614,11 @@ class HardwareStoreManagementSystem:
         products_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # Default to first item
+                                            # Default to first item
         products_listbox.selection_set(0)
         products_listbox.activate(0)
         
-        # Quantity entry
+                                            # Quantity entry
         quantity_frame = tk.Frame(restock_window)
         quantity_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -630,28 +630,28 @@ class HardwareStoreManagementSystem:
                                   font=("Arial", 11), width=10)
         quantity_entry.grid(row=0, column=1, padx=5, pady=5)
         
-        # Button frame
+                                            # Button frame
         button_frame = tk.Frame(restock_window)
         button_frame.pack(fill=tk.X, padx=10, pady=10)
         
         def apply_restock():
-            # Get selected product
+                                            # Get selected product
             selected_idx = products_listbox.curselection()
             if not selected_idx:
                 messagebox.showwarning("Selection Error", "Please select a product!")
                 return
                 
-            # Get product key from display name
+                                            # Get product key from display name
             display_name = products_listbox.get(selected_idx[0])
             product_key = display_name.lower().replace(' ', '_').replace("painter's_tape", "tapes")
             product_key = product_key.replace('pvc', 'pvc').replace('joints', 'joints')
             
-            # Restock
+                                            # Restock
             quantity = quantity_var.get()
             self.stock[product_key] += quantity
             self.save_stock()
             
-            # Refresh displays
+                                            # Refresh displays
             self.refresh_stock_displays()
             messagebox.showinfo("Success", f"Restocked {display_name} with {quantity} units")
             restock_window.destroy()
