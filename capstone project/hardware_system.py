@@ -1,3 +1,4 @@
+# Hardware Store Billing System with Database, PDF Receipts, User Auth, and More
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import random
@@ -7,192 +8,75 @@ import sqlite3
 import re
 import threading
 from fpdf import FPDF
-from PIL import Image, ImageTk
-import time
 
-
-
-                                    # Database setup and connection
+# Database setup and connection
 def setup_database():
     conn = sqlite3.connect('hardware_store.db')
     cursor = conn.cursor()
 
-                                    # Create tables if they don't exist
+    # Create tables if they don't exist
     cursor.execute('''CREATE TABLE IF NOT EXISTS users
                       (
-                          id
-                          INTEGER
-                          PRIMARY
-                          KEY
-                          AUTOINCREMENT,
-                          username
-                          TEXT
-                          UNIQUE
-                          NOT
-                          NULL,
-                          password
-                          TEXT
-                          NOT
-                          NULL,
-                          role
-                          TEXT
-                          NOT
-                          NULL
+                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          username TEXT UNIQUE NOT NULL,
+                          password TEXT NOT NULL,
+                          role TEXT NOT NULL
                       )''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS products
                       (
-                          id
-                          INTEGER
-                          PRIMARY
-                          KEY
-                          AUTOINCREMENT,
-                          name
-                          TEXT
-                          UNIQUE
-                          NOT
-                          NULL,
-                          price
-                          REAL
-                          NOT
-                          NULL,
-                          stock
-                          INTEGER
-                          NOT
-                          NULL,
-                          barcode
-                          TEXT
-                          UNIQUE
+                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          name TEXT UNIQUE NOT NULL,
+                          price REAL NOT NULL,
+                          stock INTEGER NOT NULL,
+                          barcode TEXT UNIQUE
                       )''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS transactions
-    (
-        id
-        INTEGER
-        PRIMARY
-        KEY
-        AUTOINCREMENT,
-        bill_no
-        INTEGER
-        NOT
-        NULL,
-        customer_name
-        TEXT
-        NOT
-        NULL,
-        customer_phone
-        TEXT,
-        customer_address
-        TEXT,
-        total
-        REAL
-        NOT
-        NULL,
-        tax
-        REAL
-        NOT
-        NULL,
-        datetime
-        DATETIME
-        DEFAULT
-        CURRENT_TIMESTAMP,
-        user_id
-        INTEGER,
-        FOREIGN
-        KEY
                       (
-        user_id
-                      ) REFERENCES users
-                      (
-                          id
-                      )
-        )''')
+                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          bill_no INTEGER NOT NULL,
+                          customer_name TEXT NOT NULL,
+                          customer_phone TEXT,
+                          customer_address TEXT,
+                          total REAL NOT NULL,
+                          tax REAL NOT NULL,
+                          datetime DATETIME DEFAULT CURRENT_TIMESTAMP,
+                          user_id INTEGER,
+                          FOREIGN KEY(user_id) REFERENCES users(id)
+                      )''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS transaction_details
-    (
-        id
-        INTEGER
-        PRIMARY
-        KEY
-        AUTOINCREMENT,
-        transaction_id
-        INTEGER,
-        product_id
-        INTEGER,
-        quantity
-        INTEGER
-        NOT
-        NULL,
-        price
-        REAL
-        NOT
-        NULL,
-        FOREIGN
-        KEY
                       (
-        transaction_id
-                      ) REFERENCES transactions
-                      (
-                          id
-                      ),
-        FOREIGN KEY
-                      (
-                          product_id
-                      ) REFERENCES products
-                      (
-                          id
-                      )
-        )''')
+                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          transaction_id INTEGER,
+                          product_id INTEGER,
+                          quantity INTEGER NOT NULL,
+                          price REAL NOT NULL,
+                          FOREIGN KEY(transaction_id) REFERENCES transactions(id),
+                          FOREIGN KEY(product_id) REFERENCES products(id)
+                      )''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS stock_history
-    (
-        id
-        INTEGER
-        PRIMARY
-        KEY
-        AUTOINCREMENT,
-        product_id
-        INTEGER,
-        change
-        INTEGER
-        NOT
-        NULL,
-        new_stock
-        INTEGER
-        NOT
-        NULL,
-        note
-        TEXT,
-        datetime
-        DATETIME
-        DEFAULT
-        CURRENT_TIMESTAMP,
-        user_id
-        INTEGER,
-        FOREIGN
-        KEY
                       (
-        product_id
-                      ) REFERENCES products
-                      (
-                          id
-                      ),
-        FOREIGN KEY
-                      (
-                          user_id
-                      ) REFERENCES users
-                      (
-                          id
-                      )
-        )''')
+                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          product_id INTEGER,
+                          change INTEGER NOT NULL,
+                          new_stock INTEGER NOT NULL,
+                          note TEXT,
+                          datetime DATETIME DEFAULT CURRENT_TIMESTAMP,
+                          user_id INTEGER,
+                          FOREIGN KEY(product_id) REFERENCES products(id),
+                          FOREIGN KEY(user_id) REFERENCES users(id)
+                      )''')
 
-                                # Create admin user if none exists
+    # Create admin user if none exists
     cursor.execute("SELECT * FROM users WHERE username='admin'")
     if not cursor.fetchone():
         cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
                        ('admin', 'admin123', 'admin'))
 
-                                            # Add default products if none exist
+    # Add default products if none exist
     cursor.execute("SELECT COUNT(*) FROM products")
     if cursor.fetchone()[0] == 0:
         default_products = [
@@ -222,16 +106,14 @@ def setup_database():
     conn.commit()
     conn.close()
 
-
-                                    # Run database setup
+# Run database setup
 setup_database()
-
 
 class LoginWindow:
     def __init__(self, root):
         self.root = root
-        self.root.title("Hardware Management Sys - Login")
-        self.root.geometry("350x250")
+        self.root.title("Hardware Store - Login")
+        self.root.geometry("400x300")
         self.root.configure(bg="#f5f5f5")
 
         # Center window
@@ -246,11 +128,17 @@ class LoginWindow:
         self.create_widgets()
 
     def create_widgets(self):
-        
+        # Header
+        header_frame = tk.Frame(self.root, bg=self.bg_color, bd=2, relief=tk.GROOVE)
+        header_frame.pack(fill=tk.X, padx=10, pady=10)
+
+        title_label = tk.Label(header_frame, text="HARDWARE STORE LOGIN",
+                               font=("Arial", 16, "bold"), bg=self.bg_color, fg=self.fg_color)
+        title_label.pack(padx=10, pady=10)
 
         # Login form
         form_frame = tk.Frame(self.root, bg=self.fg_color)
-        form_frame.pack(fill=tk.BOTH, padx=10, pady=10, expand=False)
+        form_frame.pack(fill=tk.BOTH, padx=20, pady=20, expand=True)
 
         # Username
         tk.Label(form_frame, text="Username:", font=("Arial", 11),
@@ -308,7 +196,6 @@ class LoginWindow:
         else:
             self.status_label.config(text="Invalid username or password")
 
-
 class PDF(FPDF):
     def header(self):
         self.set_font('Arial', 'B', 16)
@@ -322,17 +209,16 @@ class PDF(FPDF):
         self.set_font('Arial', 'I', 8)
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
 
-
 class HardwareManagementSystem:
     def __init__(self, root, user_id, user_role):
         self.root = root
         self.user_id = user_id
         self.user_role = user_role
         self.root.title(f"Hardware Management System - User: {user_id}")
-        self.root.geometry("1200x1200+0+0")
+        self.root.geometry("1200x900+0+0")
         self.root.configure(bg="#f5f5f5")
 
-                                            # Define hardware-themed colors
+        # Define hardware-themed colors
         self.bg_color = "#2C3E50"  # Dark blue
         self.fg_color = "#ECF0F1"  # Light gray
         self.lbl_color = '#3498DB'  # Blue
@@ -340,37 +226,37 @@ class HardwareManagementSystem:
         self.button_color = "#16A085"  # Green
         self.stock_warning_color = "#F39C12"  # Orange for low stock
 
-                                            # Database connection
+        # Database connection
         self.conn = sqlite3.connect('hardware_store.db')
         self.cursor = self.conn.cursor()
 
-                                            # Load products and prices
+        # Load products and prices
         self.cursor.execute("SELECT name, price, stock, barcode FROM products")
         self.products = {row[0]: {'price': row[1], 'stock': row[2], 'barcode': row[3]} for row in
                          self.cursor.fetchall()}
         self.prices = {product: data['price'] for product, data in self.products.items()}
         self.barcode_map = {data['barcode']: product for product, data in self.products.items() if data['barcode']}
 
-                                            # Initialize variables
+        # Initialize variables
         self.bill_no = random.randint(10, 999999)
         self.customer_name = tk.StringVar()
         self.customer_phone = tk.StringVar()
         self.customer_address = tk.StringVar()
         self.low_stock_threshold = 10
 
-                                            # Create widgets
+        # Create widgets
         self.create_widgets()
 
-                                            # Create receipts directory
+        # Create receipts directory
         if not os.path.exists('receipts'):
             os.makedirs('receipts')
 
     def create_widgets(self):
-                                            # Header
+        # Header
         header_frame = tk.Frame(self.root, bg=self.bg_color, bd=2, relief=tk.GROOVE)
         header_frame.pack(fill=tk.X, padx=10, pady=10)
 
-        title_label = tk.Label(header_frame, text="HARDWARE MANAGEMENT SYSTEM",
+        title_label = tk.Label(header_frame, text="HARDWARE STORE MANAGEMENT SYSTEM",
                                font=("Arial", 20, "bold"), bg=self.bg_color, fg=self.fg_color)
         title_label.pack(side=tk.LEFT, padx=10, pady=10)
 
@@ -378,52 +264,52 @@ class HardwareManagementSystem:
                               font=("Arial", 12), bg=self.bg_color, fg=self.fg_color)
         date_label.pack(side=tk.RIGHT, padx=10, pady=10)
 
-                                            # User info
+        # User info
         user_label = tk.Label(header_frame, text=f"User: {self.user_id} ({self.user_role})",
                               font=("Arial", 12), bg=self.bg_color, fg=self.fg_color)
         user_label.pack(side=tk.RIGHT, padx=10)
 
-                                            # Stock summary button
+        # Stock summary button
         stock_button = tk.Button(header_frame, text="Stock Summary", command=self.show_stock_summary,
                                  font=("Arial", 11), bg=self.stock_warning_color, fg=self.fg_color)
         stock_button.pack(side=tk.RIGHT, padx=10)
 
-                                            # Reports button
+        # Reports button
         reports_button = tk.Button(header_frame, text="Reports", command=self.show_reports,
                                    font=("Arial", 11), bg="#8E44AD", fg=self.fg_color)
         reports_button.pack(side=tk.RIGHT, padx=10)
 
-                                            # Customer details
+        # Customer details
         customer_frame = tk.LabelFrame(self.root, text="Customer Details", font=("Arial", 12, "bold"),
                                        bg=self.fg_color, bd=2, relief=tk.GROOVE)
         customer_frame.pack(fill=tk.X, padx=10, pady=5)
 
-                                            # Customer name
+        # Customer name
         tk.Label(customer_frame, text="Customer Name:", font=("Arial", 11),
                  bg=self.fg_color).grid(row=0, column=0, padx=5, pady=5, sticky="e")
         name_entry = tk.Entry(customer_frame, textvariable=self.customer_name,
                               font=("Arial", 11), width=30)
         name_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
 
-                                            # Customer phone
+        # Customer phone
         tk.Label(customer_frame, text="Phone:", font=("Arial", 11),
                  bg=self.fg_color).grid(row=0, column=2, padx=5, pady=5, sticky="e")
         phone_entry = tk.Entry(customer_frame, textvariable=self.customer_phone,
                                font=("Arial", 11), width=20)
         phone_entry.grid(row=0, column=3, padx=5, pady=5, sticky="w")
 
-                                            # Bill number
+        # Bill number
         tk.Label(customer_frame, text=f"Bill No: {self.bill_no}", font=("Arial", 11, "bold"),
                  bg=self.fg_color).grid(row=0, column=4, padx=5, pady=5)
 
-                                            # Customer address
+        # Customer address
         tk.Label(customer_frame, text="Address:", font=("Arial", 11),
                  bg=self.fg_color).grid(row=1, column=0, padx=5, pady=5, sticky="e")
         address_entry = tk.Entry(customer_frame, textvariable=self.customer_address,
                                  font=("Arial", 11), width=70)
         address_entry.grid(row=1, column=1, columnspan=4, padx=5, pady=5, sticky="we")
 
-                                            # Barcode entry
+        # Barcode entry
         tk.Label(customer_frame, text="Barcode:", font=("Arial", 11),
                  bg=self.fg_color).grid(row=2, column=0, padx=5, pady=5, sticky="e")
         self.barcode_var = tk.StringVar()
@@ -432,11 +318,11 @@ class HardwareManagementSystem:
         barcode_entry.grid(row=2, column=1, padx=5, pady=5, sticky="w")
         barcode_entry.bind("<Return>", self.process_barcode)
 
-                                            # Product categories
+        # Product categories
         categories_frame = tk.Frame(self.root, bg=self.fg_color)
         categories_frame.pack(fill=tk.BOTH, padx=10, pady=5, expand=True)
 
-                                            # Tools & Fasteners
+        # Tools & Fasteners
         tools_frame = tk.LabelFrame(categories_frame, text="Tools & Fasteners",
                                     font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         tools_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5, expand=True)
@@ -444,7 +330,7 @@ class HardwareManagementSystem:
         self.tools_inputs = {}
         row = 0
         for product in ["nails", "screws", "hammers", "screwdrivers", "pliers"]:
-                                            # Create label with stock information
+            # Create label with stock information
             stock = self.products.get(product, {}).get('stock', 0)
             stock_color = "black" if stock > self.low_stock_threshold else self.stock_warning_color
             stock_text = f"{product.title()}: (Stock: {stock})"
@@ -452,7 +338,7 @@ class HardwareManagementSystem:
                            bg=self.fg_color, fg=stock_color)
             lbl.grid(row=row, column=0, padx=5, pady=5, sticky="e")
 
-                                            # Create spinbox for quantity input
+            # Create spinbox for quantity input
             var = tk.IntVar(value=0)
             self.tools_inputs[product] = (var, lbl)
             spinbox = tk.Spinbox(tools_frame, textvariable=var, from_=0, to=stock if stock > 0 else 0,
@@ -460,7 +346,7 @@ class HardwareManagementSystem:
             spinbox.grid(row=row, column=1, padx=5, pady=5)
             row += 1
 
-                                            # Plumbing Supplies
+        # Plumbing Supplies
         plumbing_frame = tk.LabelFrame(categories_frame, text="Plumbing Supplies",
                                        font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         plumbing_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5, expand=True)
@@ -483,7 +369,7 @@ class HardwareManagementSystem:
             spinbox.grid(row=row, column=1, padx=5, pady=5)
             row += 1
 
-                                            # Paint & Supplies
+        # Paint & Supplies
         paint_frame = tk.LabelFrame(categories_frame, text="Paint & Supplies",
                                     font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         paint_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5, expand=True)
@@ -508,7 +394,7 @@ class HardwareManagementSystem:
             spinbox.grid(row=row, column=1, padx=5, pady=5)
             row += 1
 
-                                            # Electrical Supplies
+        # Electrical Supplies
         electrical_frame = tk.LabelFrame(categories_frame, text="Electrical Supplies",
                                          font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         electrical_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=5, pady=5, expand=True)
@@ -530,7 +416,7 @@ class HardwareManagementSystem:
             spinbox.grid(row=row, column=1, padx=5, pady=5)
             row += 1
 
-                                    # Buttons
+        # Buttons
         button_frame = tk.Frame(self.root, bg=self.fg_color)
         button_frame.pack(fill=tk.X, padx=10, pady=10)
 
@@ -542,7 +428,7 @@ class HardwareManagementSystem:
                   font=("Arial", 11, "bold"), bg=self.button_color, fg=self.fg_color,
                   width=15, height=2).pack(side=tk.LEFT, padx=5)
 
-        tk.Button(button_frame, text="Save Receipt", command=lambda: threading.Thread(target=self.save_bill).start(),
+        tk.Button(button_frame, text="Save Receipt", command=lambda: threading.Thread(target=self.save_bill, daemon=True).start(),
                   font=("Arial", 11, "bold"), bg=self.button_color, fg=self.fg_color,
                   width=15, height=2).pack(side=tk.LEFT, padx=5)
 
@@ -558,7 +444,7 @@ class HardwareManagementSystem:
                   font=("Arial", 11, "bold"), bg=self.highlight_color, fg=self.fg_color,
                   width=15, height=2).pack(side=tk.LEFT, padx=5)
 
-                                            # Output area
+        # Output area
         output_frame = tk.LabelFrame(self.root, text="Bill Summary",
                                      font=("Arial", 12, "bold"), bg=self.fg_color, bd=2, relief=tk.GROOVE)
         output_frame.pack(fill=tk.BOTH, padx=10, pady=5, expand=True)
@@ -567,7 +453,7 @@ class HardwareManagementSystem:
                                                      font=("Courier New", 10), height=15)
         self.output_text.pack(fill=tk.BOTH, padx=5, pady=5, expand=True)
 
-                                            # Instructions
+        # Instructions
         instructions_frame = tk.Frame(self.root, bg="#f0f8ff", bd=1, relief=tk.GROOVE)
         instructions_frame.pack(fill=tk.X, padx=10, pady=10)
 
@@ -591,7 +477,7 @@ class HardwareManagementSystem:
             tk.Label(instructions_frame, text=instruction, font=("Arial", 10),
                      bg="#f0f8ff", fg="#2C3E50", justify="left").pack(anchor="w", padx=20)
 
-        tk.Label(instructions_frame, text="Note: Receipts are saved in the 'capstone project' folder",
+        tk.Label(instructions_frame, text="Note: Receipts are saved in the 'receipts' folder",
                  font=("Arial", 10), bg="#f0f8ff", fg=self.highlight_color).pack(anchor="w", padx=20, pady=(0, 5))
 
     def process_barcode(self, event=None):
@@ -627,12 +513,12 @@ class HardwareManagementSystem:
     def validate_phone(self, phone):
         if not phone:
             return True  # Phone is optional
-                                    # Simple phone validation (at least 10 digits)
+        # Simple phone validation (at least 10 digits)
         return re.match(r'^[0-9+-\s]{10,}$', phone) is not None
 
     def update_stock_display(self, product):
         """Update stock display after quantity change"""
-                                    # Find which category the product belongs to
+        # Find which category the product belongs to
         inputs_dict = None
         if product in self.tools_inputs:
             inputs_dict = self.tools_inputs
@@ -649,7 +535,7 @@ class HardwareManagementSystem:
             ordered = var.get()
             available = max(0, current_stock - ordered)
 
-                                    # Update label color based on available stock
+            # Update label color based on available stock
             stock_color = "black" if available > self.low_stock_threshold else self.stock_warning_color
             display_name = product.replace('_', ' ').title()
             if "Pvc" in display_name:
@@ -659,7 +545,7 @@ class HardwareManagementSystem:
 
             lbl.config(text=f"{display_name}: (Stock: {available})", fg=stock_color)
 
-                                    # Update spinbox max value
+            # Update spinbox max value
             for frame in [self.tools_inputs, self.plumbing_inputs, self.paint_inputs, self.electrical_inputs]:
                 if product in frame:
                     var, lbl = frame[product]
@@ -672,32 +558,32 @@ class HardwareManagementSystem:
             messagebox.showwarning("Input Error", "Please enter customer name!")
             return
 
-                                    # Validate phone number
+        # Validate phone number
         if not self.validate_phone(self.customer_phone.get()):
             messagebox.showwarning("Input Error", "Invalid phone number format!")
             return
 
-                                    # Calculate totals
+        # Calculate totals
         tools_total = sum(self.tools_inputs[item][0].get() * self.prices[item] for item in self.tools_inputs)
         plumbing_total = sum(self.plumbing_inputs[item][0].get() * self.prices[item] for item in self.plumbing_inputs)
         paint_total = sum(self.paint_inputs[item][0].get() * self.prices[item] for item in self.paint_inputs)
         electrical_total = sum(
             self.electrical_inputs[item][0].get() * self.prices[item] for item in self.electrical_inputs)
 
-                                    # Calculate ETR
+        # Calculate ETR
         tools_tax = round(tools_total * 0.05)
         plumbing_tax = round(plumbing_total * 0.05)
         paint_tax = round(paint_total * 0.05)
         electrical_tax = round(electrical_total * 0.05)
 
-                                    # Grand total
+        # Grand total
         grand_total = tools_total + plumbing_total + paint_total + electrical_total + \
                       tools_tax + plumbing_tax + paint_tax + electrical_tax
 
-                                    # Display results
+        # Display results
         self.output_text.delete(1.0, tk.END)
         self.output_text.insert(tk.END, "=" * 80 + "\n")
-        self.output_text.insert(tk.END, f"{'HARDWARE MANAGEMENT SYSTEM':^80}\n")
+        self.output_text.insert(tk.END, f"{'HARDWARE STORE MANAGEMENT SYSTEM':^80}\n")
         self.output_text.insert(tk.END, "=" * 80 + "\n")
         self.output_text.insert(tk.END,
                                 f"Bill No: {self.bill_no} {'Date:':>50} {datetime.now().strftime('%d-%m-%Y')}\n")
@@ -706,13 +592,15 @@ class HardwareManagementSystem:
         self.output_text.insert(tk.END, f"Address: {self.customer_address.get()}\n")
         self.output_text.insert(tk.END, "-" * 80 + "\n")
 
-                                    # Create a table for totals
+        # Create a table for totals
         self.output_text.insert(tk.END, f"{'Category':<20}{'Subtotal':>20}{'Tax':>20}\n")
         self.output_text.insert(tk.END, "-" * 80 + "\n")
-        self.output_text.insert(tk.END, f"{'Tools': <20}{'Ksh.' + str(tools_total):>20}{'Ksh.' + str(tools_tax):>20}\n")
-        self.output_text.insert(tk.END, f"{'Plumbing':  <20}{'Ksh.' + str(plumbing_total):>20}{'Ksh.' + str(plumbing_tax):>20}\n")
-        self.output_text.insert(tk.END, f"{'Paint':  <20}{'Ksh.' + str(paint_total):>20}{'Ksh.' + str(paint_tax):>20}\n")
-        self.output_text.insert(tk.END,f"{'Electrical':  <20}{'Ksh.' + str(electrical_total):>20}{'Ksh.' + str(electrical_tax):>20}\n")
+        self.output_text.insert(tk.END, f"{'Tools':<20}{'Ksh.' + str(tools_total):>20}{'Ksh.' + str(tools_tax):>20}\n")
+        self.output_text.insert(tk.END,
+                                f"{'Plumbing':<20}{'Ksh.' + str(plumbing_total):>20}{'Ksh.' + str(plumbing_tax):>20}\n")
+        self.output_text.insert(tk.END, f"{'Paint':<20}{'Ksh.' + str(paint_total):>20}{'Ksh.' + str(paint_tax):>20}\n")
+        self.output_text.insert(tk.END,
+                                f"{'Electrical':<20}{'Ksh.' + str(electrical_total):>20}{'Ksh.' + str(electrical_tax):>20}\n")
         self.output_text.insert(tk.END, "-" * 80 + "\n")
         self.output_text.insert(tk.END, f"{'GRAND TOTAL:':<40}Ksh.{grand_total}\n")
         self.output_text.insert(tk.END, "=" * 80 + "\n")
@@ -720,26 +608,26 @@ class HardwareManagementSystem:
     def generate_bill_text(self):
         customer_name = self.customer_name.get().strip()
         if not customer_name:
-            return " Please enter customer name!", None
+            return " Please enter customer name!", None, None
 
-                                    # Calculate totals
+        # Calculate totals
         tools_total = sum(self.tools_inputs[item][0].get() * self.prices[item] for item in self.tools_inputs)
         plumbing_total = sum(self.plumbing_inputs[item][0].get() * self.prices[item] for item in self.plumbing_inputs)
         paint_total = sum(self.paint_inputs[item][0].get() * self.prices[item] for item in self.paint_inputs)
         electrical_total = sum(
             self.electrical_inputs[item][0].get() * self.prices[item] for item in self.electrical_inputs)
 
-                                    # Calculate ETR
+        # Calculate ETR
         tools_tax = round(tools_total * 0.05)
         plumbing_tax = round(plumbing_total * 0.05)
         paint_tax = round(paint_total * 0.05)
         electrical_tax = round(electrical_total * 0.05)
 
-                                    # Grand total
+        # Grand total
         grand_total = tools_total + plumbing_total + paint_total + electrical_total + \
                       tools_tax + plumbing_tax + paint_tax + electrical_tax
 
-                                    # Generate bill header
+        # Generate bill header
         bill_text = "\n" + "=" * 80 + "\n"
         bill_text += f"{'HARDWARE EMPORIUM':^80}\n"
         bill_text += f"{'=' * 80}\n"
@@ -752,7 +640,7 @@ class HardwareManagementSystem:
         bill_text += f"{'Product':<30}{'Qty':>10}{'Price':>15}{'Amount':>15}\n"
         bill_text += "-" * 80 + "\n"
 
-                                    # Add products to bill
+        # Add products to bill
         all_inputs = {
             "Tools": self.tools_inputs,
             "Plumbing": self.plumbing_inputs,
@@ -800,13 +688,13 @@ class HardwareManagementSystem:
             messagebox.showwarning("Input Error", bill_text)
             return
             
-                                            # Create a new database connection for this thread
+        # Create a new database connection for this thread
         def save_in_thread():
             try:
                 conn = sqlite3.connect('hardware_store.db')
                 cursor = conn.cursor()
                 
-                                            # Insert transaction
+                # Insert transaction
                 cursor.execute('''INSERT INTO transactions
                                 (bill_no, customer_name, customer_phone, customer_address, total, tax, user_id)
                                 VALUES (?, ?, ?, ?, ?, ?, ?)''',
@@ -815,7 +703,7 @@ class HardwareManagementSystem:
                                 grand_total - (grand_total / 1.05), self.user_id))
                 transaction_id = cursor.lastrowid
 
-                                            # Insert transaction details
+                # Insert transaction details
                 for category in [self.tools_inputs, self.plumbing_inputs, self.paint_inputs, self.electrical_inputs]:
                     for product, (var, lbl) in category.items():
                         qty = var.get()
@@ -826,7 +714,7 @@ class HardwareManagementSystem:
                                         VALUES (?, (SELECT id FROM products WHERE name = ?), ?, ?)''',
                                         (transaction_id, product, qty, price))
 
-                                            # Update stock levels
+                # Update stock levels
                 for category in [self.tools_inputs, self.plumbing_inputs, self.paint_inputs, self.electrical_inputs]:
                     for product, (var, lbl) in category.items():
                         qty = var.get()
@@ -842,12 +730,12 @@ class HardwareManagementSystem:
 
                 conn.commit()
                 
-                                            # Generate PDF receipt
+                # Generate PDF receipt
                 pdf = PDF()
                 pdf.add_page()
                 pdf.set_font("Arial", size=12)
 
-                                            # Add receipt content
+                # Add receipt content
                 lines = bill_text.split('\n')
                 for line in lines:
                     if '=' in line:  # Draw line
@@ -857,11 +745,11 @@ class HardwareManagementSystem:
                         pdf.set_font("Arial", size=10)
                         pdf.cell(0, 7, line, 0, 1)
 
-                                            # Create filename
+                # Create filename
                 filename = f"capstone project/{customer_name.replace(' ', '_')}_{self.bill_no}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
                 pdf.output(filename)
 
-                                            # Schedule UI updates on main thread
+                # Schedule UI updates on main thread
                 self.root.after(0, lambda: self.on_save_complete(filename))
             except sqlite3.Error as e:
                 self.root.after(0, lambda: messagebox.showerror("Database Error", f"Error saving transaction: {str(e)}"))
@@ -873,7 +761,7 @@ class HardwareManagementSystem:
                 except:
                     pass
 
-                                            # Start the save operation in a new thread
+        # Start the save operation in a new thread
         threading.Thread(target=save_in_thread, daemon=True).start()
 
     def on_save_complete(self, filename):
@@ -881,33 +769,32 @@ class HardwareManagementSystem:
         messagebox.showinfo("Success", f" Receipt saved successfully as:\n{filename}")
         self.clear_all()
 
-
     def clear_all(self):
-                                            # Clear inputs
+        # Clear inputs
         self.customer_name.set("")
         self.customer_phone.set("")
         self.customer_address.set("")
         self.barcode_var.set("")
 
-                                            # Generate new bill number
+        # Generate new bill number
         self.bill_no = random.randint(100, 9999999)
 
-                                            # Reset all quantities
+        # Reset all quantities
         for category in [self.tools_inputs, self.plumbing_inputs,
                          self.paint_inputs, self.electrical_inputs]:
             for (var, lbl) in category.values():
                 var.set(0)
 
-                                            # Clear output
+        # Clear output
         self.output_text.delete(1.0, tk.END)
         self.output_text.insert(tk.END, " Form cleared. Ready for new customer.")
 
-                                            # Refresh stock displays
+        # Refresh stock displays
         self.refresh_stock_displays()
 
     def refresh_stock_displays(self):
         """Refresh all stock displays with current stock levels"""
-                                            # Update product data from database
+        # Update product data from database
         self.cursor.execute("SELECT name, stock FROM products")
         self.products = {row[0]: {'stock': row[1]} for row in self.cursor.fetchall()}
 
@@ -923,7 +810,7 @@ class HardwareManagementSystem:
                     display_name = "Painter's Tape"
                 lbl.config(text=f"{display_name}: (Stock: {stock})", fg=stock_color)
 
-                                            # Update spinbox max value
+                # Update spinbox max value
                 spinbox = lbl.master.grid_slaves(row=lbl.grid_info()["row"], column=1)[0]
                 spinbox.config(to=stock if stock > 0 else 0)
 
@@ -935,33 +822,33 @@ class HardwareManagementSystem:
         stock_window.transient(self.root)
         stock_window.grab_set()
 
-                                            # Create a frame for the treeview and scrollbar
+        # Create a frame for the treeview and scrollbar
         tree_frame = tk.Frame(stock_window)
         tree_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-                                            # Create a treeview with columns
+        # Create a treeview with columns
         columns = ("Product", "Current Stock", "Status")
         tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
 
-                                            # Define headings
+        # Define headings
         tree.heading("Product", text="Product")
         tree.heading("Current Stock", text="Current Stock")
         tree.heading("Status", text="Status")
 
-                                            # Define column widths
+        # Define column widths
         tree.column("Product", width=300, anchor="w")
         tree.column("Current Stock", width=100, anchor="center")
         tree.column("Status", width=100, anchor="center")
 
-                                            # Add scrollbar
+        # Add scrollbar
         scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=tree.yview)
         tree.configure(yscroll=scrollbar.set)
 
-                                            # Pack the tree and scrollbar
+        # Pack the tree and scrollbar
         tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-                                            # Add stock data to the treeview
+        # Add stock data to the treeview
         self.cursor.execute("SELECT name, stock FROM products")
         for row in self.cursor.fetchall():
             status = "Low" if row[1] <= self.low_stock_threshold else "OK"
@@ -973,11 +860,11 @@ class HardwareManagementSystem:
             tree.insert("", tk.END, values=(display_name, row[1], status),
                         tags=("low" if status == "Low" else "ok"))
 
-                                            # Configure tag colors
+        # Configure tag colors
         tree.tag_configure("low", background="#FFF2CC")
         tree.tag_configure("ok", background="white")
 
-                                            # Add summary
+        # Add summary
         self.cursor.execute("SELECT COUNT(*), SUM(CASE WHEN stock <= ? THEN 1 ELSE 0 END) FROM products",
                             (self.low_stock_threshold,))
         total_items, low_stock_count = self.cursor.fetchone()
@@ -990,7 +877,7 @@ class HardwareManagementSystem:
         tk.Label(summary_frame, text=f"Low Stock Items: {low_stock_count}",
                  font=("Arial", 10), fg=self.stock_warning_color).pack(side=tk.LEFT, padx=10)
 
-                                            # Add button to close
+        # Add button to close
         button_frame = tk.Frame(stock_window)
         button_frame.pack(fill=tk.X, padx=10, pady=10)
 
@@ -1006,7 +893,7 @@ class HardwareManagementSystem:
         restock_window.transient(self.root)
         restock_window.grab_set()
 
-                                            # Create a frame for the search and list
+        # Create a frame for the search and list
         search_frame = tk.Frame(restock_window)
         search_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
 
@@ -1019,17 +906,17 @@ class HardwareManagementSystem:
         search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         search_entry.focus()
 
-                                            # Create a frame for the listbox and scrollbar
+        # Create a frame for the listbox and scrollbar
         list_frame = tk.Frame(restock_window)
         list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
-                                            # Create a listbox to select products
+        # Create a listbox to select products
         products_listbox = tk.Listbox(list_frame, selectmode=tk.SINGLE, height=15,
                                       font=("Arial", 11))
         scrollbar = tk.Scrollbar(list_frame, orient=tk.VERTICAL, command=products_listbox.yview)
         products_listbox.config(yscrollcommand=scrollbar.set)
 
-                                            # Add products to listbox
+        # Add products to listbox
         self.cursor.execute("SELECT name FROM products ORDER BY name")
         self.all_products = [row[0] for row in self.cursor.fetchall()]
         self.filtered_products = self.all_products.copy()
@@ -1045,11 +932,11 @@ class HardwareManagementSystem:
         products_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-                                                # Default to first item
+        # Default to first item
         products_listbox.selection_set(0)
         products_listbox.activate(0)
 
-                                                # Search functionality
+        # Search functionality
         def update_list(event=None):
             search_term = search_var.get().lower()
             self.filtered_products = [p for p in self.all_products if search_term in p.lower()]
@@ -1069,7 +956,7 @@ class HardwareManagementSystem:
 
         search_var.trace("w", lambda *args: update_list())
 
-                                                # Quantity entry
+        # Quantity entry
         quantity_frame = tk.Frame(restock_window)
         quantity_frame.pack(fill=tk.X, padx=10, pady=10)
 
@@ -1081,26 +968,26 @@ class HardwareManagementSystem:
                                     font=("Arial", 11), width=10)
         quantity_entry.grid(row=0, column=1, padx=5, pady=5)
 
-                                                        # Button frame
+        # Button frame
         button_frame = tk.Frame(restock_window)
         button_frame.pack(fill=tk.X, padx=10, pady=10)
 
         def apply_restock():
-                                                        # Get selected product
+            # Get selected product
             selected_idx = products_listbox.curselection()
             if not selected_idx:
                 messagebox.showwarning("Selection Error", "Please select a product!")
                 return
 
-                                                        # Get product key from display name
+            # Get product key from display name
             display_name = products_listbox.get(selected_idx[0])
             product_key = display_name.lower().replace(' ', '_').replace("painter's_tape", "tapes")
             product_key = product_key.replace('pvc', 'pvc').replace('joints', 'joints')
 
-                                                        # Restock
+            # Restock
             quantity = quantity_var.get()
             try:
-                                                        # Update stock in database
+                # Update stock in database
                 self.cursor.execute("UPDATE products SET stock = stock + ? WHERE name = ?", (quantity, product_key))
                 self.cursor.execute('''INSERT INTO stock_history
                                            (product_id, change, new_stock, note, user_id)
@@ -1110,11 +997,11 @@ class HardwareManagementSystem:
                                      f"Restocked {quantity} units", self.user_id))
                 self.conn.commit()
 
-                                                        # Update local data
+                # Update local data
                 if product_key in self.products:
                     self.products[product_key]['stock'] += quantity
 
-                                                        # Refresh displays
+                # Refresh displays
                 self.refresh_stock_displays()
                 messagebox.showinfo("Success", f"Restocked {display_name} with {quantity} units")
                 restock_window.destroy()
@@ -1137,15 +1024,15 @@ class HardwareManagementSystem:
         reports_window.transient(self.root)
         reports_window.grab_set()
 
-                                                    # Create notebook for different reports
+        # Create notebook for different reports
         notebook = ttk.Notebook(reports_window)
         notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-                                                    # Daily Sales Report
+        # Daily Sales Report
         daily_frame = tk.Frame(notebook)
         notebook.add(daily_frame, text="Daily Sales")
 
-                                                    # Date selection
+        # Date selection
         date_frame = tk.Frame(daily_frame)
         date_frame.pack(fill=tk.X, padx=10, pady=10)
 
@@ -1157,24 +1044,24 @@ class HardwareManagementSystem:
         tk.Button(date_frame, text="Generate Report", command=lambda: self.generate_daily_sales(daily_frame),
                   font=("Arial", 11), bg=self.button_color, fg=self.fg_color).pack(side=tk.LEFT, padx=10)
 
-                                                    # Stock Alerts Report
+        # Stock Alerts Report
         stock_frame = tk.Frame(notebook)
         notebook.add(stock_frame, text="Stock Alerts")
 
         tk.Label(stock_frame, text="Low Stock Items", font=("Arial", 12, "bold")).pack(pady=10)
 
-                                                    # Generate stock alerts by default
+        # Generate stock alerts by default
         self.generate_stock_alerts(stock_frame)
 
     def generate_daily_sales(self, parent_frame):
         """Generate daily sales report"""
-                                                    # Clear previous results
+        # Clear previous results
         for widget in parent_frame.winfo_children():
             if widget.winfo_class() != 'Frame':  # Keep the date frame
                 widget.destroy()
 
         try:
-                                                                # Get sales data
+            # Get sales data
             self.cursor.execute('''SELECT strftime('%Y-%m-%d', datetime) AS sale_date,
                                           COUNT(*)                       AS transactions,
                                           SUM(total)                     AS total_sales
@@ -1188,7 +1075,7 @@ class HardwareManagementSystem:
                          font=("Arial", 12)).pack(pady=20)
                 return
 
-                                                            # Create summary frame
+            # Create summary frame
             summary_frame = tk.LabelFrame(parent_frame, text="Daily Summary", font=("Arial", 11))
             summary_frame.pack(fill=tk.X, padx=10, pady=10)
 
@@ -1203,40 +1090,40 @@ class HardwareManagementSystem:
                                                                                                          padx=10,
                                                                                                          pady=5)
 
-                                                                # Create details frame
+            # Create details frame
             details_frame = tk.LabelFrame(parent_frame, text="Transaction Details", font=("Arial", 11))
             details_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-                                                                # Create treeview
+            # Create treeview
             columns = ("ID", "Bill No", "Customer", "Total", "Time")
             tree = ttk.Treeview(details_frame, columns=columns, show="headings")
 
-                                                                # Define headings
+            # Define headings
             tree.heading("ID", text="ID")
             tree.heading("Bill No", text="Bill No")
             tree.heading("Customer", text="Customer")
             tree.heading("Total", text="Total")
             tree.heading("Time", text="Time")
 
-                                                                # Define column widths
+            # Define column widths
             tree.column("ID", width=50, anchor="center")
             tree.column("Bill No", width=80, anchor="center")
             tree.column("Customer", width=150, anchor="w")
             tree.column("Total", width=100, anchor="e")
             tree.column("Time", width=100, anchor="center")
 
-                                                                # Add scrollbar
+            # Add scrollbar
             scrollbar = ttk.Scrollbar(details_frame, orient=tk.VERTICAL, command=tree.yview)
             tree.configure(yscroll=scrollbar.set)
 
-                                                                # Pack the tree and scrollbar
+            # Pack the tree and scrollbar
             tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-                                                                # Get transaction details
+            # Get transaction details
             self.cursor.execute('''SELECT id, bill_no, customer_name, total, strftime('%H:%M:%S', datetime)
                                    FROM transactions
-                                   WHERE date (datetime) = ?''', (self.report_date.get(),))
+                                   WHERE date(datetime) = ?''', (self.report_date.get(),))
 
             for row in self.cursor.fetchall():
                 tree.insert("", tk.END, values=row)
@@ -1246,7 +1133,7 @@ class HardwareManagementSystem:
     def generate_stock_alerts(self, parent_frame):
         """Generate stock alerts report"""
         try:
-                                                        # Get low stock items
+            # Get low stock items
             self.cursor.execute('''SELECT name, stock
                                    FROM products
                                    WHERE stock <= ?
@@ -1258,30 +1145,30 @@ class HardwareManagementSystem:
                          font=("Arial", 12)).pack(pady=20)
                 return
 
-                                                        # Create treeview
+            # Create treeview
             tree_frame = tk.Frame(parent_frame)
             tree_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
             columns = ("Product", "Current Stock")
             tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
 
-                                                        # Define headings
+            # Define headings
             tree.heading("Product", text="Product")
             tree.heading("Current Stock", text="Current Stock")
 
-                                                        # Define column widths
+            # Define column widths
             tree.column("Product", width=400, anchor="w")
             tree.column("Current Stock", width=150, anchor="center")
 
-                                                        # Add scrollbar
+            # Add scrollbar
             scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=tree.yview)
             tree.configure(yscroll=scrollbar.set)
 
-                                                        # Pack the tree and scrollbar
+            # Pack the tree and scrollbar
             tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-                                                        # Add data
+            # Add data
             for row in low_stock_items:
                 display_name = row[0].replace('_', ' ').title()
                 if "Pvc" in display_name:
@@ -1299,7 +1186,6 @@ class HardwareManagementSystem:
         if messagebox.askokcancel("Exit", "Are you sure you want to exit the application?"):
             self.conn.close()
             self.root.destroy()
-
 
 if __name__ == "__main__":
     root = tk.Tk()

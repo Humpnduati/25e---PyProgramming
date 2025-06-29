@@ -1,3 +1,9 @@
 {
-    "python.analysis.autoImportCompletions": true
+    "python.analysis.autoImportCompletions": true,
+    "python.globalModuleInstallation": true,
+    "python.languageServer": "Pylance",
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.terminal.shellIntegration.enabled": true,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": true
 }
