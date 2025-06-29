@@ -230,8 +230,8 @@ setup_database()
 class LoginWindow:
     def __init__(self, root):
         self.root = root
-        self.root.title("Hardware Store - Login")
-        self.root.geometry("400x300")
+        self.root.title("Hardware Management Sys - Login")
+        self.root.geometry("350x250")
         self.root.configure(bg="#f5f5f5")
 
         # Center window
@@ -246,17 +246,11 @@ class LoginWindow:
         self.create_widgets()
 
     def create_widgets(self):
-        # Header
-        header_frame = tk.Frame(self.root, bg=self.bg_color, bd=2, relief=tk.GROOVE)
-        header_frame.pack(fill=tk.X, padx=10, pady=10)
-
-        title_label = tk.Label(header_frame, text="HARDWARE STORE LOGIN",
-                               font=("Arial", 16, "bold"), bg=self.bg_color, fg=self.fg_color)
-        title_label.pack(padx=10, pady=10)
+        
 
         # Login form
         form_frame = tk.Frame(self.root, bg=self.fg_color)
-        form_frame.pack(fill=tk.BOTH, padx=20, pady=20, expand=True)
+        form_frame.pack(fill=tk.BOTH, padx=10, pady=10, expand=False)
 
         # Username
         tk.Label(form_frame, text="Username:", font=("Arial", 11),
