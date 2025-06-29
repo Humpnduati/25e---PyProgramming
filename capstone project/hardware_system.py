@@ -12,6 +12,7 @@ from PIL import Image, ImageTk
 import time
 
 
+
 # Database setup and connection
 def setup_database():
     conn = sqlite3.connect('hardware_store.db')
@@ -716,11 +717,9 @@ class HardwareStoreManagementSystem:
         self.output_text.insert(tk.END, f"{'Category':<20}{'Subtotal':>20}{'Tax':>20}\n")
         self.output_text.insert(tk.END, "-" * 80 + "\n")
         self.output_text.insert(tk.END, f"{'Tools':<20}{'Ksh.' + str(tools_total):>20}{'Ksh.' + str(tools_tax):>20}\n")
-        self.output_text.insert(tk.END,
-                                f"{'Plumbing':<20}{'Ksh.' + str(plumbing_total):>20}{'Ksh.' + str(plumbing_tax):>20}\n")
+        self.output_text.insert(tk.END, f"{'Plumbing':<20}{'Ksh.' + str(plumbing_total):>20}{'Ksh.' + str(plumbing_tax):>20}\n")
         self.output_text.insert(tk.END, f"{'Paint':<20}{'Ksh.' + str(paint_total):>20}{'Ksh.' + str(paint_tax):>20}\n")
-        self.output_text.insert(tk.END,
-                                f"{'Electrical':<20}{'Ksh.' + str(electrical_total):>20}{'Ksh.' + str(electrical_tax):>20}\n")
+        self.output_text.insert(tk.END,f"{'Electrical':<20}{'Ksh.' + str(electrical_total):>20}{'Ksh.' + str(electrical_tax):>20}\n")
         self.output_text.insert(tk.END, "-" * 80 + "\n")
         self.output_text.insert(tk.END, f"{'GRAND TOTAL:':<40}Ksh.{grand_total}\n")
         self.output_text.insert(tk.END, "=" * 80 + "\n")
