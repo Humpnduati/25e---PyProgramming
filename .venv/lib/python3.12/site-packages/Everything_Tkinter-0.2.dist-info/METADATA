@@ -1,0 +1,48 @@
+Metadata-Version: 2.1
+Name: Everything-Tkinter
+Version: 0.2
+Summary: Everything-Tkinter gives you everything you need for tkinter. Made by the creator of Pip-for-CMD.
+Home-page: https://github.com/OmerYelin/Every-tkinter
+Author: Omer Yelin
+Author-email: pipforcmd@gmail.com
+License: MIT
+Download-URL: https://github.com/OmerYelin/Every-tkinter/archive/refs/tags/Every-tkinter.tar.gz
+Keywords: Tkinter,everything
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Requires-Python: >=3
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+
+# Every-tkinter
+### Everything you need for Tkinter
+
+##### Every-tkinter is a simple module that gives you everything that you need to use in tkinter.
+##### In Every-tkinter's current version, we are supporting:
+
+- fonts
+- colors
+- characters
+
+##### Everything.py is completely open-source.
+## Installation
+
+Every-tkinter does not requires any external modules to run.
+
+To install Every-tkinter, just write this command into your command line:
+```sh
+pip install every_tkinter
+```
+
+
