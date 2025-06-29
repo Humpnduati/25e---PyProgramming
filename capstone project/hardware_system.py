@@ -803,78 +803,92 @@ class HardwareStoreManagementSystem:
 
     def save_bill(self):
         bill_text, customer_name, grand_total = self.generate_bill_text()
-
+        
         if customer_name is None:
             messagebox.showwarning("Input Error", bill_text)
             return
-
-        # Save to database
-        try:
-            # Insert transaction
-            self.cursor.execute('''INSERT INTO transactions
-                                   (bill_no, customer_name, customer_phone, customer_address, total, tax, user_id)
-                                   VALUES (?, ?, ?, ?, ?, ?, ?)''',
+            
+        # Create a new database connection for this thread
+        def save_in_thread():
+            try:
+                conn = sqlite3.connect('hardware_store.db')
+                cursor = conn.cursor()
+                
+                # Insert transaction
+                cursor.execute('''INSERT INTO transactions
+                                (bill_no, customer_name, customer_phone, customer_address, total, tax, user_id)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)''',
                                 (self.bill_no, customer_name, self.customer_phone.get(),
-                                 self.customer_address.get(), grand_total,
-                                 grand_total - (grand_total / 1.05), self.user_id))
-            transaction_id = self.cursor.lastrowid
+                                self.customer_address.get(), grand_total,
+                                grand_total - (grand_total / 1.05), self.user_id))
+                transaction_id = cursor.lastrowid
 
-            # Insert transaction details
-            for category in [self.tools_inputs, self.plumbing_inputs, self.paint_inputs, self.electrical_inputs]:
-                for product, (var, lbl) in category.items():
-                    qty = var.get()
-                    if qty > 0:
-                        price = self.prices[product]
-                        self.cursor.execute('''INSERT INTO transaction_details
-                                                   (transaction_id, product_id, quantity, price)
-                                               VALUES (?, (SELECT id FROM products WHERE name = ?), ?, ?)''',
-                                            (transaction_id, product, qty, price))
+                # Insert transaction details
+                for category in [self.tools_inputs, self.plumbing_inputs, self.paint_inputs, self.electrical_inputs]:
+                    for product, (var, lbl) in category.items():
+                        qty = var.get()
+                        if qty > 0:
+                            price = self.prices[product]
+                            cursor.execute('''INSERT INTO transaction_details
+                                            (transaction_id, product_id, quantity, price)
+                                        VALUES (?, (SELECT id FROM products WHERE name = ?), ?, ?)''',
+                                        (transaction_id, product, qty, price))
 
-            # Update stock levels
-            for category in [self.tools_inputs, self.plumbing_inputs, self.paint_inputs, self.electrical_inputs]:
-                for product, (var, lbl) in category.items():
-                    qty = var.get()
-                    if qty > 0:
-                        self.cursor.execute("UPDATE products SET stock = stock - ? WHERE name = ?", (qty, product))
-                        self.cursor.execute('''INSERT INTO stock_history
-                                                   (product_id, change, new_stock, note, user_id)
-                                               VALUES ((SELECT id FROM products WHERE name = ?), ?,
-                                                       (SELECT stock FROM products WHERE name = ?), ?, ?)''',
-                                            (product, -qty, product,
-                                             f"Sold {qty} units in transaction {transaction_id}",
-                                             self.user_id))
+                # Update stock levels
+                for category in [self.tools_inputs, self.plumbing_inputs, self.paint_inputs, self.electrical_inputs]:
+                    for product, (var, lbl) in category.items():
+                        qty = var.get()
+                        if qty > 0:
+                            cursor.execute("UPDATE products SET stock = stock - ? WHERE name = ?", (qty, product))
+                            cursor.execute('''INSERT INTO stock_history
+                                            (product_id, change, new_stock, note, user_id)
+                                        VALUES ((SELECT id FROM products WHERE name = ?), ?,
+                                                (SELECT stock FROM products WHERE name = ?), ?, ?)''',
+                                        (product, -qty, product,
+                                        f"Sold {qty} units in transaction {transaction_id}",
+                                        self.user_id))
 
-            self.conn.commit()
-        except sqlite3.Error as e:
-            messagebox.showerror("Database Error", f"Error saving transaction: {str(e)}")
-            return
+                conn.commit()
+                
+                # Generate PDF receipt
+                pdf = PDF()
+                pdf.add_page()
+                pdf.set_font("Arial", size=12)
 
-        # Generate PDF receipt
-        try:
-            pdf = PDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
+                # Add receipt content
+                lines = bill_text.split('\n')
+                for line in lines:
+                    if '=' in line:  # Draw line
+                        pdf.set_font("Arial", 'B', 12)
+                        pdf.cell(0, 10, line.replace('=', '').strip(), 0, 1, 'C')
+                    else:
+                        pdf.set_font("Arial", size=10)
+                        pdf.cell(0, 7, line, 0, 1)
 
-            # Add receipt content
-            lines = bill_text.split('\n')
-            for line in lines:
-                if '=' in line:  # Draw line
-                    pdf.set_font("Arial", 'B', 12)
-                    pdf.cell(0, 10, line.replace('=', '').strip(), 0, 1, 'C')
-                else:
-                    pdf.set_font("Arial", size=10)
-                    pdf.cell(0, 7, line, 0, 1)
+                # Create filename
+                filename = f"receipts/{customer_name.replace(' ', '_')}_{self.bill_no}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                pdf.output(filename)
 
-            # Create filename
-            filename = f"receipts/{customer_name.replace(' ', '_')}_{self.bill_no}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-            pdf.output(filename)
+                # Schedule UI updates on main thread
+                self.root.after(0, lambda: self.on_save_complete(filename))
+            except sqlite3.Error as e:
+                self.root.after(0, lambda: messagebox.showerror("Database Error", f"Error saving transaction: {str(e)}"))
+            except Exception as e:
+                self.root.after(0, lambda: messagebox.showerror("PDF Error", f"Error generating PDF: {str(e)}"))
+            finally:
+                try:
+                    conn.close()
+                except:
+                    pass
 
-            messagebox.showinfo("Success", f" Receipt saved successfully as:\n{filename}")
+        # Start the save operation in a new thread
+        threading.Thread(target=save_in_thread, daemon=True).start()
 
-            # Clear form after successful save
-            self.clear_all()
-        except Exception as e:
-            messagebox.showerror("PDF Error", f" Error generating PDF: {str(e)}")
+    def on_save_complete(self, filename):
+        """Called after save operation completes successfully"""
+        messagebox.showinfo("Success", f" Receipt saved successfully as:\n{filename}")
+        self.clear_all()
+
 
     def clear_all(self):
         # Clear inputs
