@@ -134,7 +134,8 @@ while True:
             display_board(hang, missed_letters,
                          correct_letters, secret_word)
             print('YOU LOST!\nAfter ' + str(len(missed_letters)) + ' missed guesses and ' +
-                  str(len(correct_letters)) + ' correct guesses, the word was "' + secret_word + '"')
+                  str(len(correct_letters)) + ' correct guesses. Better luck next time!')
+            print(f'The secret word was revealed to be: "{secret_word}"')
             game_is_done = True
 
     # Ask the player if they want to play again (only if the game is done)
