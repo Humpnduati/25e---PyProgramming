@@ -79,8 +79,7 @@ def display_board(hang, missed_letters, correct_letters, secret_word):
         if secret_word[i] in correct_letters:
             blanks = blanks[:i] + secret_word[i] + blanks[i+1:]
 
-    for letter in blanks:
-        print(letter, end=' ')
+    print(' '.join(blanks))  # Display the masked word with spaces between letters
     print("\n")
 
 
